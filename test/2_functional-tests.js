@@ -33,9 +33,11 @@ suite('Functional Tests', function() {
       .end(function(err, res) {
         assert.equal(res.status, 200)
         assert.isArray(res.body, 'response should be an array')
-        assert.property(res.body[0], 'commentcount', 'Books in array should contain commentcount')
-        assert.property(res.body[0], 'title', 'Books in array should contain title')
-        assert.property(res.body[0], '_id', 'Books in array should contain _id')
+        for (const book of res.body) {
+          assert.property(book, 'comment_count', 'Books in array should contain comment_count')
+          assert.property(book, 'title', 'Books in array should contain title')
+          assert.property(book, '_id', 'Books in array should contain _id')
+        }
         done()
       })
   })
@@ -255,14 +257,29 @@ suite('Functional Tests', function() {
           })
       })
 
+      test('POST /api/books/[id] with no comment', function(done) {
+        chai
+          .request(server)
+          .post(`/api/books/${books.first._id}`)
+          .send({ comment: '' })
+          .end(function(err, res) {
+            assert.equal(res.status, 200)
+            assert.isOk(res.text)
+            assert.equal(res.text, 'no comment given')
+            done()
+          })
+      })
+
       test('POST /api/books/[id] with invalid id', function(done) {
         chai
           .request(server)
           .post(`/api/books/5c8851572b00b54f7ce65187`)
+          .send({ comment: 'comment #1' })
           .end(function(err, res) {
             assert.equal(res.status, 200)
             assert.isOk(res.text)
-            assert.equal(res.text, `no book with id 5c8851572b00b54f7ce65187`)
+            assert.equal(res.text, `no book with id equal to 5c8851572b00b54f7ce65187`)
+            done()
           })
       })
     })
@@ -279,8 +296,8 @@ suite('Functional Tests', function() {
               assert.typeOf(book._id, 'string')
               assert.property(book, 'title')
               assert.typeOf(book.title, 'string')
-              assert.property(book, 'commentcount')
-              assert.typeOf(book.commentcount, 'number')
+              assert.property(book, 'comment_count')
+              assert.typeOf(book.comment_count, 'number')
             }
             done()
           })
@@ -315,8 +332,11 @@ suite('Functional Tests', function() {
             assert.property(book, 'title')
             assert.typeOf(book.title, 'string')
             assert.equal(book.title, books.first.title)
-            assert.property(book, 'commentcount')
-            assert.typeOf(book.commentcount, 'number')
+            assert.property(book, 'comments')
+            assert.isArray(book.comments)
+            for (const comment of book.comments) {
+              assert.typeOf(comment, 'string')
+            }
             done()
           })
       })
@@ -326,7 +346,7 @@ suite('Functional Tests', function() {
       test('Test DELETE /api/books/[id] with valid id in db', function(done) {
         chai
           .request(server)
-          .delete(`/api/books/${books.first._id}`)
+          .delete(`/api/books/${books.third._id}`)
           .send({})
           .end(function(err, res) {
             assert.equal(res.status, 200)

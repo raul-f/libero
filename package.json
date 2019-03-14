@@ -4,6 +4,7 @@
   "description": "boilerplate",
   "main": "server.js",
   "scripts": {
+    "test": "mocha --ui tdd --timeout 5000|| exit 0",
     "start": "node server.js"
   },
   "dependencies": {
