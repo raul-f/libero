@@ -296,7 +296,7 @@ suite('Functional Tests', function() {
             assert.equal(res.status, 200)
             assert.isOk(res.text)
             assert.typeOf(res.text, 'string')
-            assert.equal(res.text, `no book with id 5c8851572b00b54f7ce65187`)
+            assert.equal(res.text, `no book with id equal to 5c8851572b00b54f7ce65187`)
             done()
           })
       })
@@ -321,5 +321,50 @@ suite('Functional Tests', function() {
           })
       })
     })
+
+    suite('DELETE /api/books/[id] => deletion successful/deletion failed', function() {
+      test('Test DELETE /api/books/[id] with valid id in db', function(done) {
+        chai
+          .request(server)
+          .delete(`/api/books/${books.first._id}`)
+          .send({})
+          .end(function(err, res) {
+            assert.equal(res.status, 200)
+            assert.isOk(res.text)
+            assert.equal(res.text, `deletion successful`)
+            done()
+          })
+      })
+      test('Test DELETE /api/books/[id] with id not in db', function(done) {
+        chai
+          .request(server)
+          .delete(`/api/books/5c8851572b00b54f7ce65187`)
+          .send({})
+          .end(function(err, res) {
+            assert.equal(res.status, 200)
+            assert.isOk(res.text)
+            assert.equal(res.text, `no book with id equal to 5c8851572b00b54f7ce65187`)
+            done()
+          })
+      })
+    })
+
+    suite(
+      'DELETE /api/books/ => complete deletion successful/complete deletion failed',
+      function() {
+        test('Test DELETE /api/books', function(done) {
+          chai
+            .request(server)
+            .delete(`/api/books`)
+            .send({})
+            .end(function(err, res) {
+              assert.equal(res.status, 200)
+              assert.isOk(res.text)
+              assert.equal(res.text, `complete deletion successful`)
+              done()
+            })
+        })
+      }
+    )
   })
 })
